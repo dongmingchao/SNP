@@ -87,7 +87,6 @@ public class Server extends Thread {
             try {
                 server = socket.accept();
                 new Thread(sonServer).start();
-                out = new PrintWriter(server.getOutputStream(),true);
                 new Thread(hand).start();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -131,11 +130,17 @@ public class Server extends Thread {
 
         @Override
         public void run() {
-            PrintWriter outStream = out;
+            PrintWriter outStream = null;
+            try {
+                outStream = new PrintWriter(server.getOutputStream(), true);
+            } catch (IOException e) {
+                System.out.println("输出流建立出错");
+                e.printStackTrace();
+            }
             System.out.println("一个输出线程启动");
             while (online) {
 //                if (inLocal.hasNextLine()) {//注意：也会阻塞
-                if (inLocal.hasNextLine()) {
+                if (inLocal.hasNextLine()) {//TODO: 这里会在第二个链接建立之后使线程崩溃退出
                     String got = inLocal.nextLine();
                     if (got.equals("bye")) break;
                     outStream.println(got);
