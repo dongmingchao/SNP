@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Server extends Thread {
@@ -17,6 +18,7 @@ public class Server extends Thread {
     InputStream send;
     OutputStream message;
     private Socket server;
+    private ArrayList<PrintWriter> outputStreams;
 
     public Server(int port, InputStream input, OutputStream output) {
         inLocal = new Scanner(input);
@@ -24,6 +26,7 @@ public class Server extends Thread {
         this.port = port;
         this.send = input;
         this.message = output;
+        this.outputStreams = new ArrayList<>();
     }
 
     public Server(ServerSocket socket, InputStream input, OutputStream output) {
@@ -83,11 +86,11 @@ public class Server extends Thread {
     public void run() {
         online = true;
         socket = startServer();
+        new Thread(hand).start();
         while (online) {
             try {
                 server = socket.accept();
                 new Thread(sonServer).start();
-                new Thread(hand).start();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -130,20 +133,14 @@ public class Server extends Thread {
 
         @Override
         public void run() {
-            PrintWriter outStream = null;
-            try {
-                outStream = new PrintWriter(server.getOutputStream(), true);
-            } catch (IOException e) {
-                System.out.println("输出流建立出错");
-                e.printStackTrace();
-            }
             System.out.println("一个输出线程启动");
+//            PrintWriter outStream = new PrintWriter(server.getOutputStream(), true);
+//            if (inLocal.hasNextLine()) {//注意：也会阻塞
             while (online) {
-//                if (inLocal.hasNextLine()) {//注意：也会阻塞
-                if (inLocal.hasNextLine()) {//TODO: 这里会在第二个链接建立之后使线程崩溃退出
+                if (inLocal.hasNextLine()) {
                     String got = inLocal.nextLine();
+                    outputStreams.forEach(each -> each.println(got));
                     if (got.equals("bye")) break;
-                    outStream.println(got);
                 }
             }
             System.out.println("一个输出线程关闭");
@@ -158,26 +155,27 @@ public class Server extends Thread {
             PrintWriter out = null;
             try {
                 in = new Scanner(trans.getInputStream());
-                out = new PrintWriter(trans.getOutputStream());
+                out = new PrintWriter(trans.getOutputStream(),true);
+                outputStreams.add(out);
+                outLocal.println("已连接" + trans.getRemoteSocketAddress());
+                while (in.hasNextLine()) {
+                    received = in.nextLine();
+                    if (received.equals("bye")) {
+                        out.println("bye");
+                        try {
+                            outputStreams.remove(out);
+                            trans.close();
+                        } catch (IOException e) {
+                            System.out.println("断开链接出错");
+                            e.printStackTrace();
+                        }
+                        break;
+                    } else outLocal.println(received);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-//            if (initStream(trans)) {
-            outLocal.println("已连接" + trans.getRemoteSocketAddress());
-            while (in.hasNextLine()) {
-                received = in.nextLine();
-                if (received.equals("bye")) {
-                    out.println("bye");
-                    try {
-                        trans.close();
-                    } catch (IOException e) {
-                        System.out.println("断开链接出错");
-                        e.printStackTrace();
-                    }
-                    break;
-                } else outLocal.println(received);
-            }
+            System.out.println("一个客户端断开链接");
         }
-//        }
     };
 }
