@@ -1,0 +1,9 @@
+{
+  "/":"page/index.html",
+  "/index.html":"page/index.html",
+  "/hello.html":"page/hello.html",
+  "/home.html":"page/home.html",
+  "/get":"get.json",
+  "[html]":"page/*",
+  "[js]":"page/js"
+}
