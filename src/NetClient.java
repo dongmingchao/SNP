@@ -1,9 +1,3 @@
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
-
 public class NetClient {
     public static void main(String[] args) {
         String serverName = "127.0.0.1";

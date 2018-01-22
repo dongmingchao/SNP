@@ -53,84 +53,131 @@ public class Request {
         if (type.matches("multipart/form-data; boundary=----WebKitFormBoundary.+")) {
             String boundary = type.substring(30);
             System.out.println("本次boundary是" + boundary);
-//            raw.useDelimiter("--" + boundary);
-            String maybeLength = header.get("Content-Length");
-            if (maybeLength != null) {
-                try {
-//                    Integer postLength = Integer.valueOf(maybeLength);
-//                    System.out.println(postLength);
-//                    Integer nowLength = 0;
-                    while (raw.hasNextLine()) {
-                        String chunk = raw.nextLine();
-//                        nowLength = chunk.length() + 1 + nowLength;
-                        if (chunk.matches("--" + boundary)) continue;
-                        else if (chunk.split("Content-Disposition: form-data; name=\".+?\"").length == 0) {
-//                            String value = raw.nextLine();
-//                            nowLength = nowLength + value.length() + 1;
-//                            param_POST.put(chunk.substring(38, chunk.length() - 1), value);
-//                            System.out.println(chunk.substring(38, chunk.length() - 1));
-                        } else if (chunk.split("Content-Disposition: form-data; name=\".+?\"; filename=\".+?\"").length == 0) {
-//                            String key = chunk.split("Content-Disposition: form-data; name=\"")[1].split("\"; filename=\"")[0];
-//                            String value_fileName = chunk.split("Content-Disposition: form-data; name=\".+?\"; filename=\"")[1].split("\"")[0];
-//                            System.out.println("key\t" + key);
-//                            System.out.println("fileName\t" + value_fileName);
-//                            String contentType = raw.nextLine();
-//                            nowLength = nowLength + contentType.length() + 1;
-//                            contentType = contentType.split(": ")[1];
-//                            System.out.println(contentType);
-//                            System.out.println(nowLength);
-                            ArrayList<Integer> fileRaw = readInt(in,boundary);
-                            writeFile(fileRaw, "test.png", 0);
-//                            while (raw.hasNextLine())
-//                                System.out.println(raw.nextLine());
-                            return;
-                        } else if (chunk.equals("")) continue;
-//                        else {
-//                            System.out.println(chunk.split("; ")[1]);
-//                        }
-//                    for(int i=0; i<count; i++){
-//                        out.write(buffer[i]);
-//                    }
-                    }
-                } catch (NumberFormatException e) {
-                    System.out.println("数字解析出错");
-                    e.printStackTrace();
-                }
+            DataInputStream flagStream = new DataInputStream(new ByteArrayInputStream(("--" + boundary).getBytes()));
+            LinkedList<Integer> flagInt = new LinkedList<>();
+            try {
+                while (flagStream.available() > 0)
+                    flagInt.add(flagStream.readUnsignedByte());
+            } catch (IOException e) {
+                System.out.println("boundary转换为unsignByte失败");
+                e.printStackTrace();
             }
+            DataInputStream post = new DataInputStream(in);
+            LinkedList<LinkedList<Integer>> receive = new LinkedList<>();
+            try {
+                while (post.available() > 0) {
+                    String param = listToString(depart(post, flagInt, false));
+                    if (param.equals("")) continue;
+                    System.out.println("param: "+param);
+                    String key = param.split("\"")[1];
+                    System.out.println("key: "+key);
+                    if (param.split("; ").length==3 && param.split("\"").length == 4){
+                        String filename = param.split("\"")[3];
+                        String filetype = listToString(depart(post, flagInt, false));
+                        System.out.println("filename: "+filename);
+                        System.out.println("filetype: "+filetype);
+                        depart(post, flagInt, false);//只是为了输出那个key和value之间的空行 TDOD: 换成更底层的控制
+                        receive.add(depart(post, flagInt, false));
+                    }else {
+                        depart(post, flagInt, false);//只是为了输出那个key和value之间的空行 TDOD: 换成更底层的控制
+                        System.out.println("value: " + listToString(depart(post, flagInt, false)));
+                    }
+//                    param_POST.put(, param.split("\\n\\r\\n")[1]);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            receive.forEach(each -> {
+                System.out.println("---------------------------");
+                byte[] s = new byte[each.size()];
+                for (int i = 0; i < each.size(); i++) {
+                    s[i] = each.get(i).byteValue();
+                }
+                String theS = new String(s);
+                System.out.println(theS);
+                System.out.println("---------------------------");
+            });
+//            ArrayList<Integer> fileRaw = readUnsignedByte(in,flagInt);
+//            writeFile(receive.getLast(), "ano.png", 0);
         }
     }
 
-    public ArrayList<Integer> readInt(InputStream in,String boundary) {
-        ArrayList<Integer> res = new ArrayList<>();
-        DataInputStream flagStream = new DataInputStream(new ByteArrayInputStream(boundary.getBytes()));
-        LinkedList<Integer> flagInt = new LinkedList<>();
+    private String listToString(LinkedList<Integer> each) {
+        int length = each.size();
+        byte[] s = new byte[length];
+        for (int i = 0; i < length; i++) {
+            s[i] = each.poll().byteValue();
+        }
+        return new String(s);
+    }
+
+    private LinkedList<Integer> depart(DataInputStream post, LinkedList<Integer> flagInt, boolean notBreak) {
+        LinkedList<Integer> res = new LinkedList<>();
+        boolean wait = true;
         try {
-            while (flagStream.available() > 3)
-                flagInt.add(flagStream.readInt());
-        }catch (IOException e) {
-            System.out.println("boundary转换为int失败");
+            while (wait) {
+                int got = post.readUnsignedByte();
+                if (got == flagInt.getFirst() && post.available() > flagInt.size()) {
+                    LinkedList<Integer> compare = new LinkedList<>();
+                    compare.add(got);
+                    for (int i = 0; i < flagInt.size() - 1; i++) {
+                        int meta = post.readUnsignedByte();
+                        if (meta == 13 && !notBreak) {
+                            int next = post.readUnsignedByte();
+                            if (next == 10) {
+                                wait = false;
+                                break;
+                            } else {
+                                compare.add(meta);
+                                compare.add(next);
+                            }
+                        } else compare.add(meta);
+                    }
+                    System.out.println(compare.equals(flagInt));
+//                    System.out.print("compare= ");
+//                    compare.forEach(System.out::println);
+//                    System.out.print("flagInt= ");
+//                    flagInt.forEach(System.out::println);
+                    if (!compare.equals(flagInt)) res.addAll(compare);
+                    else {
+                        post.readByte();
+                        post.readByte();
+                    }
+                } else if (got == 13 && !notBreak) {
+                    int next = post.readUnsignedByte();
+                    if (next == 10)
+                        wait = false;
+                    else {
+                        res.add(got);
+                        res.add(next);
+                    }
+                } else res.add(got);
+            }
+        } catch (IOException e) {
             e.printStackTrace();
         }
+        return res;
+    }
+
+    public ArrayList<Integer> readUnsignedByte(InputStream in, LinkedList<Integer> flagInt) {
+        ArrayList<Integer> res = new ArrayList<>();
         try {
             DataInputStream op = new DataInputStream(in);
-            while (op.available()>3){
-                int got = op.readInt();
-//                if (got==1970168929) break;
-                if (got==757926413){
+            while (op.available() > 0) {
+                int got = op.readUnsignedByte();
+                if (got == flagInt.getFirst() && op.available() > flagInt.size()) {
                     LinkedList<Integer> compare = new LinkedList<>();
-                    for (int i = 0; i < flagInt.size(); i++) {
-                        compare.add(op.readInt());
+                    compare.add(got);
+                    for (int i = 0; i < flagInt.size() - 1; i++) {
+                        compare.add(op.readUnsignedByte());
                     }
                     System.out.println(compare.equals(flagInt));
                     System.out.print("compare= ");
                     compare.forEach(System.out::println);
-                    System.out.println(boundary);
                     System.out.print("flagInt= ");
                     flagInt.forEach(System.out::println);
-                    if (compare.equals(flagInt)) break;
-                    else res.addAll(compare);
-                }
-                res.add(got);
+                    if (!compare.equals(flagInt)) res.addAll(compare);
+                } else res.add(got);
             }
             System.out.println("结束");
             return res;
@@ -140,13 +187,13 @@ public class Request {
         return null;
     }
 
-    private static void writeFile(ArrayList<Integer> in, String fileName, long skip) {
+    private static void writeFile(LinkedList<Integer> in, String fileName, long skip) {
         if (in == null) return;
         try {
             DataOutputStream out = new DataOutputStream(new FileOutputStream(fileName));
             in.forEach(each -> {
                 try {
-                    out.writeInt(each);
+                    out.writeByte(each);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

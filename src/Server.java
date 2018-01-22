@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -94,21 +95,6 @@ public class Server extends Thread {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-//            if (initStream(server)) {
-//                outLocal.println("已连接" + server.getRemoteSocketAddress());
-//                while (in.hasNextLine()) {
-//                    received = in.nextLine();
-//                    if (received.equals("bye")) {
-//                        out.println("bye");
-//                        if (quitServer(server)) {
-//                            outLocal.println("一个客户端安全退出");
-//                        } else {
-//                            outLocal.println("一个客户端异常退出");
-//                        }
-//                        break;
-//                    } else outLocal.println(received);
-//                }
-//            }
         }
         inLocal.close();
         outLocal.close();
@@ -133,7 +119,7 @@ public class Server extends Thread {
 
         @Override
         public void run() {
-            System.out.println("一个输出线程启动");
+            outLocal.println("一个输出线程启动");
 //            PrintWriter outStream = new PrintWriter(server.getOutputStream(), true);
 //            if (inLocal.hasNextLine()) {//注意：也会阻塞
             while (online) {
@@ -143,7 +129,7 @@ public class Server extends Thread {
                     if (got.equals("bye")) break;
                 }
             }
-            System.out.println("一个输出线程关闭");
+            outLocal.println("一个输出线程关闭");
         }
     };
 
@@ -157,7 +143,8 @@ public class Server extends Thread {
                 in = new Scanner(trans.getInputStream());
                 out = new PrintWriter(trans.getOutputStream(),true);
                 outputStreams.add(out);
-                outLocal.println("已连接" + trans.getRemoteSocketAddress());
+                SocketAddress clientIP = trans.getRemoteSocketAddress();
+                outLocal.println("已连接" + clientIP);
                 while (in.hasNextLine()) {
                     received = in.nextLine();
                     if (received.equals("bye")) {
@@ -169,13 +156,13 @@ public class Server extends Thread {
                             System.out.println("断开链接出错");
                             e.printStackTrace();
                         }
+                        outLocal.println(clientIP+"断开链接");
                         break;
-                    } else outLocal.println(received);
+                    } else outLocal.println(clientIP+":"+received);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            System.out.println("一个客户端断开链接");
         }
     };
 }
