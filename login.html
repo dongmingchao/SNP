@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head> 
+    <meta charset="utf-8">
+    <title>简易HTTP服务器</title>
+    <link rel="stylesheet" type="text/css" href="login.css"/>
+    <script>
+        function loadXMLDoc()
+        {
+            var xmlhttp;
+            var txt,x,i;
+            if (window.XMLHttpRequest)
+            {
+                // IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+                xmlhttp=new XMLHttpRequest();
+            }
+            else
+            {
+                // IE6, IE5 浏览器执行代码
+                xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            xmlhttp.onreadystatechange=function()
+            {
+                if (xmlhttp.readyState==4 && xmlhttp.status==200)
+                {
+                    xmlDoc=xmlhttp.responseXML;
+                    txt="";
+                    x=xmlDoc.getElementsByTagName("ARTIST");
+                    for (i=0;i<x.length;i++)
+                    {
+                        txt=txt + x[i].childNodes[0].nodeValue + "<br>";
+                    }
+                    document.getElementById("myDiv").innerHTML=txt;
+                }
+            }
+            xmlhttp.open("GET","cd_catalog.xml",true);
+            xmlhttp.send();
+        }
+    </script>
+
+</head>
+<style>
+
+    .test{
+        width: 200px;
+        height: 100px;
+        background-color: white;
+        transition: all 0.5s ease;
+    }
+    .test:hover{
+        background-color: #5557ff;
+    }
+</style>
+<style>
+    * {
+        padding:0;
+        margin:0;
+    }
+    .wrap {
+        width:200px;
+        height: 100%;
+        margin:200px;
+    }
+    table {
+        border-collapse:collapse;
+        border-spacing:0;
+        border:1px solid #c0c0c0;
+        width:560%;
+    }
+
+    th {
+        background-color: #f2c071;
+        font:bold 24px "宋体";
+        color:#fff;
+    }
+    td {
+        font:23px "宋体";
+    }
+    tbody tr {
+        background-color:#f0f0f0;
+    }
+    tbody tr:hover {
+        cursor:pointer;
+        background-color:#fafafa;
+    }
+</style>
+<body>
+
+
+    <div id="header" style="background-color:#fdfbff;">
+        <h1 style="margin-bottom:0;">简易HTTP服务器</h1>
+    </div>
+
+    <div id="myDiv"></div>
+    <div  class="label_input">
+        <li class="test">全部文件</li>
+        <li class="test">图片</li>
+        <li class="test">文档</li>
+        <li class="test">视频</li>
+        <li class="test">音乐</li>
+        <li class="test">其他</li>
+
+    </div>
+
+
+    <div id="image_logo">
+        <div id = "login_frame" >
+        <form  action="http://127.0.0.1:9000" method="post" enctype="multipart/form-data" >
+            <input  type="file" name="update"/>
+            <input  id="btn_login" type="submit" value="上传文件"/>
+        </form>
+        </div>
+    </div>
+</body>
+
+    <body>
+    <div class="wrap">
+        <table>
+
+            <thead>
+            <tr>
+                <th>
+                    <input type="checkbox" id="j_cbAll" />
+                </th>
+                <th>文件名</th>
+                <th>大小</th>
+                <th>修改日期</th>
+            </tr>
+            </thead>
+
+            <tbody id="j_tb">
+            <tr>
+                <td>
+                    <input type="checkbox" />
+                </td>
+                <td>文件一</td>
+                <td>10kb</td>
+                <td>2018.1.23</td>
+
+            </tr>
+            <tr>
+                <td>
+                    <input type="checkbox" />
+                </td>
+                <td>文件一</td>
+                <td>10kb</td>
+                <td>2018.1.23</td>
+
+            </tr>
+            <tr>
+                <td>
+                    <input type="checkbox" />
+                </td>
+                <td>文件一</td>
+                <td>10kb</td>
+                <td>2018.1.23</td>
+
+            </tr>
+            <tr>
+                <td>
+                    <input type="checkbox" />
+                </td>
+                <td>文件一</td>
+                <td>10kb</td>
+                <td>2018.1.23</td>
+
+            </tr>
+            <tr>
+                <td>
+                    <input type="checkbox" />
+                </td>
+                <td>文件一</td>
+                <td>10kb</td>
+                <td>2018.1.23</td>
+
+            </tr>
+
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        var all = document.getElementById("j_cbAll");
+        var tbody = document.getElementById("j_tb");
+        var checkboxs = tbody.getElementsByTagName("input");
+        all.onclick = function() {
+            for (var i = 0; i < checkboxs.length; i++) {
+                var checkbox = checkboxs[i];
+                checkbox.checked = this.checked;
+            }
+        };
+        for (var i = 0; i < checkboxs.length; i++) {
+            checkboxs[i].onclick = function() {
+                var isCheckedAll = true;
+                for (var i = 0; i < checkboxs.length; i++) {
+                    if (!checkboxs[i].checked) {
+                        isCheckedAll = false;
+                        break;
+                    }
+                }
+                all.checked = isCheckedAll;
+            };
+        }</script>
+
+
+
+</body>
+</html>
