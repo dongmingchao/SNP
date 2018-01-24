@@ -2,74 +2,42 @@
 <html>
 <head> 
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>简易HTTP服务器</title>
-    <link rel="stylesheet" type="text/css" href="login.css"/>
-    <script>
-        function loadXMLDoc()
-        {
-            var xmlhttp;
-            var txt,x,i;
-            if (window.XMLHttpRequest)
-            {
-                // IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
-                xmlhttp=new XMLHttpRequest();
-            }
-            else
-            {
-                // IE6, IE5 浏览器执行代码
-                xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-            }
-            xmlhttp.onreadystatechange=function()
-            {
-                if (xmlhttp.readyState==4 && xmlhttp.status==200)
-                {
-                    xmlDoc=xmlhttp.responseXML;
-                    txt="";
-                    x=xmlDoc.getElementsByTagName("ARTIST");
-                    for (i=0;i<x.length;i++)
-                    {
-                        txt=txt + x[i].childNodes[0].nodeValue + "<br>";
-                    }
-                    document.getElementById("myDiv").innerHTML=txt;
-                }
-            }
-            xmlhttp.open("GET","cd_catalog.xml",true);
-            xmlhttp.send();
-        }
-    </script>
+    <!--<link rel="stylesheet" type="text/css" href="css/login.css"/>-->
+    <!--<link rel="stylesheet" href="css/foundation.min.css">-->
+    <!--<script src="js/jqueryf.js"></script>-->
+    <!--<script src="js/foundation.min.js"></script>-->
 
+    <link rel="stylesheet" href="https://cdn.bootcss.com/foundation/5.5.3/css/foundation.min.css">
+    <script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/foundation/5.5.3/js/foundation.min.js"></script>
+    <script src="https://cdn.bootcss.com/foundation/5.5.3/js/vendor/modernizr.js"></script>
 </head>
-<style>
 
-    .test{
-        width: 200px;
-        height: 100px;
-        background-color: white;
-        transition: all 0.5s ease;
-    }
-    .test:hover{
-        background-color: #5557ff;
+<style>
+    body {
+        margin:0;
+        padding: 0;
     }
 </style>
+
 <style>
-    * {
-        padding:0;
-        margin:0;
-    }
     .wrap {
-        width:200px;
-        height: 100%;
-        margin:200px;
+        width:140px;
+        height: 30%;
+        margin:0;
+
     }
     table {
         border-collapse:collapse;
         border-spacing:0;
         border:1px solid #c0c0c0;
-        width:560%;
+        width:460%;
     }
 
     th {
-        background-color: #f2c071;
+        background-color: #fafffd;
         font:bold 24px "宋体";
         color:#fff;
     }
@@ -84,125 +52,101 @@
         background-color:#fafafa;
     }
 </style>
+
 <body>
+    <nav class="top-bar" data-topbar style="margin-top: 0">
+        <ul class="title-area">
+            <li class="name">
+                <!-- 如果你不需要标题或图标可以删掉它 -->
+                <h1 style="font-size: 30px"><a href="#">简易Http服务器</a></h1>
+            </li>
+        </ul>
+    </nav>
 
-
-    <div id="header" style="background-color:#fdfbff;">
-        <h1 style="margin-bottom:0;">简易HTTP服务器</h1>
+    <div class="medium-2 columns"  style="background-color:#f1f1f1" >
+        <ul class="side-nav" >
+            <li class="active" style="font-size: 22px"><a href="#">全部文件</a></li>
+            <li style="font-size: 20px"><a href="#">图片</a></li>
+            <li style="font-size: 20px"><a href="#">文档</a></li>
+            <li style="font-size: 20px"><a href="#">视频</a></li>
+            <li style="font-size: 20px"><a href="#">音乐</a></li>
+            <li style="font-size: 20px"><a href="#">其他</a></li>
+            <li style="font-size: 20px"><a href="#">我的回收站</a></li>
+        </ul>
     </div>
 
-    <div id="myDiv"></div>
-    <div  class="label_input">
-        <li class="test">全部文件</li>
-        <li class="test">图片</li>
-        <li class="test">文档</li>
-        <li class="test">视频</li>
-        <li class="test">音乐</li>
-        <li class="test">其他</li>
+    <div class="medium-10 columns">
+        <div class="panel callout">
+            <div style="padding: 55px;">
+                <ul class="button-group radius">
+                    <li><button type="button" class="button">选择文件</button></li>
+                    <li><button type="button" class="button">上传文件</button></li>
+                    <li><button type="button" class="button">下载文件</button></li>
+                    <li><button type="button" class="button">删除文件</button></li>
+                    <li><button type="button" class="button">移动文件</button></li>
+                </ul>
+                <div class="wrap">
+                    <table >
+                        <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" id="j_cbAll" />
+                            </th>
+                            <th>文件名</th>
+                            <th>大小</th>
+                            <th>修改日期</th>
+                        </tr>
+                        </thead>
 
-    </div>
+                        <tbody id="fileList"></tbody>
+                    </table>
+
+                </div>
+
+            </div>
+
+            <!--在这里我不会用这个语法就是说上面的按钮没有绑定事件-->
 
 
-    <div id="image_logo">
-        <div id = "login_frame" >
-        <form  action="http://127.0.0.1:9000" method="post" enctype="multipart/form-data" >
-            <input  type="file" name="update"/>
-            <input  id="btn_login" type="submit" value="上传文件"/>
-        </form>
+                <div id = "login_frame" >
+                    <form  action="http://127.0.0.1:9000" method="post" enctype="multipart/form-data" >
+                        <input  type="file" name="update"/>
+                        <input  id="btn_login" type="submit" value="上传文件"/>
+                    </form>
+                </div>
         </div>
     </div>
+
 </body>
 
-    <body>
-    <div class="wrap">
-        <table>
 
-            <thead>
-            <tr>
-                <th>
-                    <input type="checkbox" id="j_cbAll" />
-                </th>
-                <th>文件名</th>
-                <th>大小</th>
-                <th>修改日期</th>
-            </tr>
-            </thead>
+<script>
+    $(document).ready(function() {
+        $(document).foundation();
+    })
+</script>
 
-            <tbody id="j_tb">
-            <tr>
-                <td>
-                    <input type="checkbox" />
-                </td>
-                <td>文件一</td>
-                <td>10kb</td>
-                <td>2018.1.23</td>
+<script>
+    let xhr = new XMLHttpRequest();
+    xhr.open("get","file",true);
+    xhr.send();
+    xhr.onreadystatechange = () => {
+        if (xhr.status===200&&xhr.readyState===4){
+            let rec = JSON.parse(xhr.responseText);
+            console.log(rec);
+            for (let i=0;i<rec.length;i++){
+                let ch = $('<tr>');
+                console.log(ch);
+                ch.append($('<td>').append($('<input type="checkbox">')));
+                ch.append($('<td>').text(rec[i]));
+                ch.append($('<td>').text('10kb'));
+                ch.append($('<td>').text('2018.1.23'));
+//                ch.append($('<a href='+rec[i]+' download='+rec[i]+'>').text('下载'));
 
-            </tr>
-            <tr>
-                <td>
-                    <input type="checkbox" />
-                </td>
-                <td>文件一</td>
-                <td>10kb</td>
-                <td>2018.1.23</td>
-
-            </tr>
-            <tr>
-                <td>
-                    <input type="checkbox" />
-                </td>
-                <td>文件一</td>
-                <td>10kb</td>
-                <td>2018.1.23</td>
-
-            </tr>
-            <tr>
-                <td>
-                    <input type="checkbox" />
-                </td>
-                <td>文件一</td>
-                <td>10kb</td>
-                <td>2018.1.23</td>
-
-            </tr>
-            <tr>
-                <td>
-                    <input type="checkbox" />
-                </td>
-                <td>文件一</td>
-                <td>10kb</td>
-                <td>2018.1.23</td>
-
-            </tr>
-
-            </tbody>
-        </table>
-    </div>
-
-    <script>
-        var all = document.getElementById("j_cbAll");
-        var tbody = document.getElementById("j_tb");
-        var checkboxs = tbody.getElementsByTagName("input");
-        all.onclick = function() {
-            for (var i = 0; i < checkboxs.length; i++) {
-                var checkbox = checkboxs[i];
-                checkbox.checked = this.checked;
+                $('#fileList').append(ch);
             }
-        };
-        for (var i = 0; i < checkboxs.length; i++) {
-            checkboxs[i].onclick = function() {
-                var isCheckedAll = true;
-                for (var i = 0; i < checkboxs.length; i++) {
-                    if (!checkboxs[i].checked) {
-                        isCheckedAll = false;
-                        break;
-                    }
-                }
-                all.checked = isCheckedAll;
-            };
-        }</script>
+        }
+    }
+</script>
 
-
-
-</body>
 </html>
