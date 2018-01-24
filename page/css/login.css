@@ -1,8 +1,4 @@
-body {
-    /*background-image: url("mask.jpg");;*/
-    background-size: 100%;//背景拉伸占据整个屏幕
-    background-repeat: no-repeat;
-}
+
 
 #login_menu {
     width:200px;
