@@ -59,7 +59,7 @@ public class Request {
                 while (flagStream.available() > 0)
                     flagInt.add(flagStream.readUnsignedByte());
             } catch (IOException e) {
-                System.out.println("boundary转换为unsignByte失败");
+                System.out.println("boundary转换为UnSignByte失败");
                 e.printStackTrace();
             }
             DataInputStream post = new DataInputStream(in);
@@ -68,37 +68,66 @@ public class Request {
                 while (post.available() > 0) {
                     String param = listToString(depart(post, flagInt, false));
                     if (param.equals("")) continue;
-                    System.out.println("param: "+param);
+                    if (param.equals("--")) continue;
+                    System.out.println("param: " + param);
                     String key = param.split("\"")[1];
-                    System.out.println("key: "+key);
-                    if (param.split("; ").length==3 && param.split("\"").length == 4){
+                    System.out.println("key: " + key);
+                    if (param.split("; ").length == 3 && param.split("\"").length == 4) {
                         String filename = param.split("\"")[3];
                         String filetype = listToString(depart(post, flagInt, false));
-                        System.out.println("filename: "+filename);
-                        System.out.println("filetype: "+filetype);
+                        System.out.println("filename: " + filename);
+                        System.out.println("filetype: " + filetype);
+                        HashMap<String, Object> file = new HashMap<>();
+                        file.putIfAbsent("name", filename);
+                        file.putIfAbsent("type", filetype);
                         depart(post, flagInt, false);//只是为了输出那个key和value之间的空行 TDOD: 换成更底层的控制
-                        receive.add(depart(post, flagInt, false));
-                    }else {
+                        LinkedList<Integer> rawFile = depart(post, flagInt, true);
+                        rawFile.removeLast();// 去掉最后的0D0A
+                        receive.add(rawFile);
+                        file.putIfAbsent("raw", rawFile);
+                        param_POST.putIfAbsent(key, file);
+                    } else {
                         depart(post, flagInt, false);//只是为了输出那个key和value之间的空行 TDOD: 换成更底层的控制
-                        System.out.println("value: " + listToString(depart(post, flagInt, false)));
+                        String value = listToString(depart(post, flagInt, false));
+                        System.out.println("value: " + value);
+                        param_POST.putIfAbsent(key, value);
                     }
-//                    param_POST.put(, param.split("\\n\\r\\n")[1]);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            receive.forEach(each -> {
-                System.out.println("---------------------------");
-                byte[] s = new byte[each.size()];
-                for (int i = 0; i < each.size(); i++) {
-                    s[i] = each.get(i).byteValue();
-                }
-                String theS = new String(s);
-                System.out.println(theS);
-                System.out.println("---------------------------");
-            });
+//            receive.forEach(each -> {
+//                System.out.println("---------------------------");
+//                byte[] s = new byte[each.size()];
+//                for (int i = 0; i < each.size(); i++) {
+//                    s[i] = each.get(i).byteValue();
+//                }
+//                String theS = new String(s);
+//                System.out.println(theS);
+//                System.out.println("---------------------------");
+//            });
 //            ArrayList<Integer> fileRaw = readUnsignedByte(in,flagInt);
 //            writeFile(receive.getLast(), "ano.png", 0);
+        } else {//普通post只读一行
+            byte[] array;
+            try {
+                array = new byte[Integer.parseInt(header.get("Content-Length"))];
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return;
+            }
+            try {
+                in.read(array);
+                raw = new Scanner(new String(array));
+                raw.useDelimiter("&");
+                while (raw.hasNext()) {
+                    String[] couple = raw.next().split("=");
+                    param_POST.put(couple[0],couple[1]);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
         }
     }
 
@@ -122,32 +151,31 @@ public class Request {
                     compare.add(got);
                     for (int i = 0; i < flagInt.size() - 1; i++) {
                         int meta = post.readUnsignedByte();
-                        if (meta == 13 && !notBreak) {
+                        if (meta == 13) {
                             int next = post.readUnsignedByte();
                             if (next == 10) {
-                                wait = false;
-                                break;
+                                if (!notBreak) {
+                                    wait = false;
+                                    break;
+                                }
                             } else {
                                 compare.add(meta);
                                 compare.add(next);
                             }
                         } else compare.add(meta);
                     }
-                    System.out.println(compare.equals(flagInt));
-//                    System.out.print("compare= ");
-//                    compare.forEach(System.out::println);
-//                    System.out.print("flagInt= ");
-//                    flagInt.forEach(System.out::println);
+//                    System.out.println(compare.equals(flagInt));
                     if (!compare.equals(flagInt)) res.addAll(compare);
                     else {
-                        post.readByte();
-                        post.readByte();
+                        post.readUnsignedByte();
+                        post.readUnsignedByte();
+                        break;
                     }
                 } else if (got == 13 && !notBreak) {
                     int next = post.readUnsignedByte();
-                    if (next == 10)
+                    if (next == 10) {
                         wait = false;
-                    else {
+                    } else {
                         res.add(got);
                         res.add(next);
                     }
@@ -199,6 +227,7 @@ public class Request {
                 }
             });
             out.close();
+            in.clear();
         } catch (FileNotFoundException e) {
             System.out.println("文件未找到");
             e.printStackTrace();

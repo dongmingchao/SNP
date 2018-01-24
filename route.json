@@ -3,7 +3,15 @@
   "/index.html":"page/index.html",
   "/hello.html":"page/hello.html",
   "/home.html":"page/home.html",
-  "/get":"get.json",
+  "/login.html":"page/login.html",
+
+  "/get":"server/get.json",
+  "/post":"server/post.json",
+  "/file":"server/file.json",
+
   "[html]":"page/*",
-  "[js]":"page/js"
+  "[js]":"page/js",
+  "[css]":"page/css",
+
+  "/cloud/ano.png":"cloud/ano.png"
 }

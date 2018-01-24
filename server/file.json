@@ -1,0 +1,7 @@
+{
+  "scope":["a"],
+  "script":[
+    "a = fs.ls('cloud')"
+  ],
+  "return":"[s:a]"
+}

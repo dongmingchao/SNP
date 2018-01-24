@@ -1,0 +1,3 @@
+{
+  "return":"名字：[p:name]<br>密码：[P:pass]<br>上传的是<br>文件名：[p:aaaa:name]<br>文件类型：[p:aaaa:type]"
+}

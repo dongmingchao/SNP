@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head> 
+    <meta charset="utf-8">
+    <title>简易HTTP服务器</title>
+    <link rel="stylesheet" type="text/css" href="css/login.css"/>
+</head>
+<style>
+
+    .test{
+        width: 200px;
+        height: 100px;
+        background-color: white;
+        transition: all 0.5s ease;
+    }
+    .test:hover{
+        background-color: #5557ff;
+    }
+</style>
+<style>
+    * {
+        padding:0;
+        margin:0;
+    }
+    .wrap {
+        width:200px;
+        height: 100%;
+        margin:200px;
+    }
+    table {
+        border-collapse:collapse;
+        border-spacing:0;
+        border:1px solid #c0c0c0;
+        width:560%;
+    }
+
+    th {
+        background-color: #f2c071;
+        font:bold 24px "宋体";
+        color:#fff;
+    }
+    td {
+        font:23px "宋体";
+    }
+    tbody tr {
+        background-color:#f0f0f0;
+    }
+    tbody tr:hover {
+        cursor:pointer;
+        background-color:#fafafa;
+    }
+</style>
+<body>
+
+
+    <div id="header" style="background-color:#fdfbff;">
+        <h1 style="margin-bottom:0;">简易HTTP服务器</h1>
+    </div>
+
+    <div id="myDiv"></div>
+    <div  class="label_input">
+        <li class="test">全部文件</li>
+        <li class="test">图片</li>
+        <li class="test">文档</li>
+        <li class="test">视频</li>
+        <li class="test">音乐</li>
+        <li class="test">其他</li>
+
+    </div>
+
+
+    <div id="image_logo">
+        <div id = "login_frame" >
+        <form  action="http://127.0.0.1:9000" method="post" enctype="multipart/form-data" >
+            <input  type="file" name="update"/>
+            <input  id="btn_login" type="submit" value="上传文件"/>
+        </form>
+        </div>
+    </div>
+</body>
+
+    <body>
+    <div class="wrap">
+        <table>
+
+            <thead>
+            <tr>
+                <th>
+                    <input type="checkbox" id="j_cbAll" />
+                </th>
+                <th>文件名</th>
+                <th>大小</th>
+                <th>修改日期</th>
+            </tr>
+            </thead>
+
+            <tbody id="fileList"></tbody>
+        </table>
+    </div>
+</body>
+<script src="js/jquery.js"></script>
+<script>
+    let xhr = new XMLHttpRequest();
+    xhr.open("get","file",true);
+    xhr.send();
+    xhr.onreadystatechange = () => {
+        if (xhr.status===200&&xhr.readyState===4){
+            let rec = JSON.parse(xhr.responseText);
+            console.log(rec);
+            for (let i=0;i<rec.length;i++){
+                let ch = $('<tr>');
+                console.log(ch);
+                ch.append($('<td>').append($('<input type="checkbox">')));
+                ch.append($('<td>').text(rec[i]));
+                ch.append($('<td>').text('10kb'));
+                ch.append($('<td>').text('2018.1.23'));
+                ch.append($('<a href='+rec[i]+' download='+rec[i]+'>').text('下载'));
+                $('#fileList').append(ch);
+            }
+        }
+    }
+</script>
+</html>

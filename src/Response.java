@@ -90,6 +90,7 @@ public class Response{
         try {
             file = path.toFile();
             if (file.getName().endsWith(".json")) return parse();
+            if (file.getName().endsWith(".css")) header.ContentType = "text/css";
             Scanner sc = new Scanner(file);
             while (sc.hasNextLine()) write(sc.nextLine());
         } catch (FileNotFoundException e) {
@@ -101,13 +102,41 @@ public class Response{
         return this;
     }
 
+    Reflex rx = null;
+
     public Response parse(){
         HashMap<String,Object> content = HttpServer.json(file);
         if (content==null) return this;
+        ArrayList<String> reg_script = (ArrayList<String>) content.get("script");
+        ArrayList<String> reg_scope = (ArrayList<String>) content.get("scope");
+        rx = new Reflex(reg_script,reg_scope);
+        rx.parse();
         String returnStatement = content.get("return").toString();
-        String reg_Gvar = "\\[(g|G):.+?]";
-        write(replace(returnStatement,reg_Gvar,each -> server.req.param_GET.get(each.substring(3,each.length()-1))));
+        String reg_var = "\\[(g|G|p|P|s|S):.+?]";
+        write(replace(returnStatement,reg_var, this::parseParam));
         return this;
+    }
+
+    private String parseParam(String param){
+        Scanner sc = new Scanner(param.substring(1,param.length()-1));
+        sc.useDelimiter(":");
+        while (sc.hasNext()) {
+            String each = sc.next();
+            switch (each.toUpperCase()) {
+                case "G":
+                    return server.req.param_GET.get(sc.next());
+                case "P":
+                    Object got = server.req.param_POST.get(sc.next());
+                    while (got instanceof HashMap) {
+                        got = ((HashMap) got).get(sc.next());
+                    }
+                    if (got == null) return null;
+                    return got.toString();
+                case "S":
+                    return rx.param_SCPOE.get(sc.next());
+            }
+        }
+        return null;
     }
 
     static public StringBuilder replace(String line,String pattern, Function<String,String> deal){
@@ -121,6 +150,7 @@ public class Response{
             res.append(deal.apply(each));
             end = m.end();
         }
+        res.append(line.substring(end));
         return res;
     }
 
