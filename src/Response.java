@@ -118,12 +118,8 @@ public class Response{
         if (content==null) return this;
         ArrayList<String> reg_script = (ArrayList<String>) content.get("script");
         ArrayList<String> reg_scope = (ArrayList<String>) content.get("scope");
-//        ArrayList<String> reg_get = (ArrayList<String>) content.get("get");
-//        ArrayList<String> reg_post = (ArrayList<String>) content.get("post");
-        rx = new Reflex(reg_script,reg_scope);
+        rx = new Reflex(reg_script,reg_scope,server.req);
         rx.parse();
-//        if (reg_get!=null) rx.addKey(reg_get,server.req.param_GET);
-//        if (reg_post!=null) rx.addKey(reg_post,server.req.param_POST);
         String returnStatement = content.get("return").toString();
         String reg_var = "\\[(g|G|p|P|s|S):.+?]";
         write(replace(returnStatement,reg_var, this::parseParam));

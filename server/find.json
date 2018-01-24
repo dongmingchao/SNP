@@ -1,5 +1,5 @@
 {
-  "scope":["dirName"],
+  "scope":["dirName","a"],
   "script":[
     "a = fs.ls('dirName')"
   ],

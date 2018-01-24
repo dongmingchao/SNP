@@ -9,6 +9,7 @@
   "/post":"server/post.json",
   "/file":"server/file.json",
   "/find":"server/find.json",
+  "/fileinspect":"server/fileinspect.json",
 
   "[html]":"page/*",
   "[js]":"page/js",

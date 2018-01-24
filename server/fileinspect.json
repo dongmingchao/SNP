@@ -1,0 +1,7 @@
+{
+  "scope":["a","name"],
+  "script":[
+    "a = fs.inspect('name')"
+  ],
+  "return":"[s:a]"
+}

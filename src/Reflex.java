@@ -11,8 +11,8 @@ public class Reflex {
         HashMap<String, Object> json = HttpServer.json("file.json");
         ArrayList<String> e = (ArrayList<String>) json.get("scope");
         ArrayList<String> t = (ArrayList<String>) json.get("script");
-        Reflex rf = new Reflex(t, e);
-        rf.parse();
+//        Reflex rf = new Reflex(t, e);
+//        rf.parse();
 //        Path[] got = Script.FSwalk(Paths.get("page"),1);
 //        if (got==null) return;
 //        for (Path s : got) {
@@ -24,9 +24,11 @@ public class Reflex {
     HashMap<String, Object> vars;
     Class<Script> script;
     HashMap<String, String> param_SCPOE;
+    Request req;
 
-    public Reflex(ArrayList<String> param, ArrayList<String> scope) {
+    public Reflex(ArrayList<String> param, ArrayList<String> scope, Request req) {
         this.param = param;
+        this.req = req;
         create_vars(scope);
         script = Script.class;
         param_SCPOE = new HashMap<>();
@@ -39,7 +41,6 @@ public class Reflex {
      * @return
      */
     void parse() {
-//        Collections.reverse(param);
         for (int i1 = 0; i1 < param.size(); i1+=3) {
             String key = param.get(i1);
             String res = null;
@@ -62,6 +63,8 @@ public class Reflex {
                 }
                 String[] subCla = methodName.split("\\.");
                 methodName = subCla[0].toUpperCase().concat(subCla[1]);
+                System.out.println("方法名：" + methodName);
+                System.out.println("参数："+Arrays.toString(args));
                 try {
                     Object script_Obj = script.newInstance();
                     switch (args.length) {
@@ -89,8 +92,7 @@ public class Reflex {
                 if (operator.equals("=")) {
                     param_SCPOE.put(key, res);
                 }
-                System.out.println("方法名：" + methodName);
-                System.out.println(Arrays.toString(deal));
+                System.out.println(param_SCPOE);
             }
         }
     }
@@ -101,7 +103,8 @@ public class Reflex {
     void create_vars(ArrayList<String> scope) {
         vars = new HashMap<>();
         for (String s : scope) {
-            vars.put(s, null);
+            if (req.param_GET!=null) vars.putIfAbsent(s, req.param_GET.get(s));
+            if (req.param_POST!=null) vars.putIfAbsent(s, req.param_POST.get(s));
         }
     }
 
