@@ -22,7 +22,7 @@ public class Request {
 //            String got = raw.nextLine();
 //            System.out.println(got);
 //        }
-
+        if(!raw.hasNextLine()) return;
         String[] firstLine = raw.nextLine().split(" ");
         if (firstLine.length > 2) {
             method = firstLine[0];

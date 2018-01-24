@@ -1,5 +1,5 @@
 {
-  "scope":["a"],
+  "scope":["a","vars"],
   "script":[
     "a = fs.ls('cloud')"
   ],

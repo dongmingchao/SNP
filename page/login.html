@@ -1,121 +1,115 @@
 <!DOCTYPE html>
 <html>
-<head> 
+<head>
     <meta charset="utf-8">
-    <title>简易HTTP服务器</title>
-    <link rel="stylesheet" type="text/css" href="css/login.css"/>
+    <title>云盘</title>
+    <!--<link rel="stylesheet" type="text/css" href="css/login.css"/>-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/foundation/5.5.3/css/foundation.min.css">
 </head>
 <style>
-
-    .test{
-        width: 200px;
-        height: 100px;
-        background-color: white;
-        transition: all 0.5s ease;
-    }
-    .test:hover{
-        background-color: #5557ff;
-    }
-</style>
-<style>
-    * {
-        padding:0;
-        margin:0;
-    }
-    .wrap {
-        width:200px;
-        height: 100%;
-        margin:200px;
-    }
-    table {
-        border-collapse:collapse;
-        border-spacing:0;
-        border:1px solid #c0c0c0;
-        width:560%;
-    }
-
-    th {
-        background-color: #f2c071;
-        font:bold 24px "宋体";
-        color:#fff;
-    }
-    td {
-        font:23px "宋体";
-    }
-    tbody tr {
-        background-color:#f0f0f0;
-    }
-    tbody tr:hover {
-        cursor:pointer;
-        background-color:#fafafa;
+    .side-nav > li{
+        font-size: 1.5rem;
     }
 </style>
 <body>
+<nav class="top-bar" data-topbar>
+    <ul class="title-area">
+        <li class="name">
+            <h1><a href="#">网盘范例</a></h1>
+        </li>
+        <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+    </ul>
 
+    <section class="top-bar-section">
+        <ul class="left">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#">Page 1</a></li>
+            <li><a href="#">Page 2</a></li>
+            <li><a href="#">Page 3</a></li>
+        </ul>
+    </section>
+</nav>
+<div class="medium-2 columns" style="background-color:#f1f1f1;">
+    <ul class="side-nav" style="font-size: large">
+        <li class="active"><a href="#">Home</a></li>
+        <li><a href="#">全部文件</a></li>
+        <li><a href="#">图片</a></li>
+        <li><a href="#">文档</a></li>
+        <li><a href="#">视频</a></li>
+        <li><a href="#">音乐</a></li>
+        <li><a href="#">其他</a></li>
+    </ul>
+</div>
+<table class="medium-10">
+    <thead>
+    <tr>
+        <th>
+            <input type="checkbox" id="j_cbAll"/>
+        </th>
+        <th>文件名</th>
+        <th>大小</th>
+        <th>修改日期</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody id="fileList"></tbody>
+</table>
 
-    <div id="header" style="background-color:#fdfbff;">
-        <h1 style="margin-bottom:0;">简易HTTP服务器</h1>
-    </div>
-
-    <div id="myDiv"></div>
-    <div  class="label_input">
-        <li class="test">全部文件</li>
-        <li class="test">图片</li>
-        <li class="test">文档</li>
-        <li class="test">视频</li>
-        <li class="test">音乐</li>
-        <li class="test">其他</li>
-
-    </div>
-
-
-    <div id="image_logo">
-        <div id = "login_frame" >
-        <form  action="http://127.0.0.1:9000" method="post" enctype="multipart/form-data" >
-            <input  type="file" name="update"/>
-            <input  id="btn_login" type="submit" value="上传文件"/>
-        </form>
-        </div>
-    </div>
-</body>
-
-    <body>
-    <div class="wrap">
-        <table>
-
-            <thead>
-            <tr>
-                <th>
-                    <input type="checkbox" id="j_cbAll" />
-                </th>
-                <th>文件名</th>
-                <th>大小</th>
-                <th>修改日期</th>
-            </tr>
-            </thead>
-
-            <tbody id="fileList"></tbody>
-        </table>
-    </div>
 </body>
 <script src="js/jquery.js"></script>
+<script src="https://cdn.bootcss.com/foundation/5.5.3/js/foundation.min.js"></script>
+<script src="https://cdn.bootcss.com/foundation/5.5.3/js/vendor/modernizr.js"></script>
 <script>
     let xhr = new XMLHttpRequest();
-    xhr.open("get","file",true);
+    xhr.open("get", "/file", true);
     xhr.send();
     xhr.onreadystatechange = () => {
-        if (xhr.status===200&&xhr.readyState===4){
+        if (xhr.status === 200 && xhr.readyState === 4) {
             let rec = JSON.parse(xhr.responseText);
-            console.log(rec);
-            for (let i=0;i<rec.length;i++){
+            for (let i = 0; i < rec.length; i++) {
+                let each = rec[i].split('/');
+                if (!each[1]) each[1] = "..";
                 let ch = $('<tr>');
-                console.log(ch);
-                ch.append($('<td>').append($('<input type="checkbox">')));
-                ch.append($('<td>').text(rec[i]));
+                let swit = $('<div class="switch small">');
+                swit.append($('<input type="checkbox" id="'+i+'">'));
+                swit.append($('<label for="'+i+'">'));
+                ch.append($('<td>').append(swit));
+                ch.append($('<td>').append($('<a href="#" onclick=kick(\'' + rec[i] + '\')>').text(each[1])));
                 ch.append($('<td>').text('10kb'));
                 ch.append($('<td>').text('2018.1.23'));
-                ch.append($('<a href='+rec[i]+' download='+rec[i]+'>').text('下载'));
+                let toolbar = $('<ul class="button-group">');
+                toolbar.append($('<li>').append($('<button type="button" class="button small" onclick="window.location.href='+rec[i]+'">').text('下载')));
+                toolbar.append($('<li>').append($('<button type="button" class="button small" onclick="window.location.href='+rec[i]+'">').text('查看')));
+                toolbar.append($('<li>').append($('<button type="button" class="button small" onclick="window.location.href='+rec[i]+'">').text('复制')));
+                toolbar.append($('<li>').append($('<button type="button" class="button small" onclick="window.location.href='+rec[i]+'">').text('详细信息')));
+                ch.append(toolbar);
                 $('#fileList').append(ch);
+            }
+        }
+    };
+
+    function kick(item) {
+        console.log(item);
+        if (!item.split('.')[1]) cd(item);
+    }
+
+    function cd(directory) {
+        $('#fileList').empty();
+        let stepIn = new XMLHttpRequest();
+        stepIn.open("get", "/find?dirName=" + directory, true);
+        stepIn.send();
+        stepIn.onreadystatechange = () => {
+            if (stepIn.status === 200 && stepIn.readyState === 4) {
+                for (let i = 0; i < rec.length; i++) {
+                    let ch = $('<tr>');
+                    ch.append($('<td>').append($('<input type="checkbox">')));
+                    ch.append($('<td>').append($('<a href="#" onclick=kick(\'' + rec[i] + '\')>').text(each[1])));
+                    ch.append($('<td>').text('10kb'));
+                    ch.append($('<td>').text('2018.1.23'));
+                    ch.append($('<a href=' + rec[i] + ' download=' + rec[i] + '>').text('下载'));
+                    $('#fileList').append(ch);
+                }
             }
         }
     }

@@ -1,7 +1,4 @@
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -14,13 +11,15 @@ import java.util.stream.Stream;
 
 public class Response{
     PrintWriter raw;
+    OutputStream out;
     HttpServer server;
     StringBuilder datagram = new StringBuilder();
     Header header = new Header();
     File file;
 
-    public Response(PrintWriter raw,HttpServer server) {
-        this.raw = raw;
+    public Response(OutputStream out,HttpServer server) {
+        this.out = out;
+        this.raw = new PrintWriter(out , true);;
         this.server = server;
     }
 
@@ -87,19 +86,29 @@ public class Response{
             header.status = "Not Found";
             return file(server.route("/NotFound.html"));
         }
+        file = path.toFile();
+        System.out.println("file: "+file);
+        if (file.getName().endsWith(".json")) return parse();
+        if (file.getName().endsWith(".css")) header.ContentType = "text/css";
+        writeFile(file);
+        return this;
+    }
+
+    byte[] bindata = null;
+
+    public void writeFile(File file){
         try {
-            file = path.toFile();
-            if (file.getName().endsWith(".json")) return parse();
-            if (file.getName().endsWith(".css")) header.ContentType = "text/css";
-            Scanner sc = new Scanner(file);
-            while (sc.hasNextLine()) write(sc.nextLine());
+            FileInputStream in = new FileInputStream(file);
+            bindata = new byte[in.available()];
+            in.read(bindata);
         } catch (FileNotFoundException e) {
             header.status_number=404;
             header.status = "Not Found";
+            file(server.route("/NotFound.html"));
             e.printStackTrace();
-            return file(server.route("/NotFound.html"));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return this;
     }
 
     Reflex rx = null;
@@ -109,8 +118,12 @@ public class Response{
         if (content==null) return this;
         ArrayList<String> reg_script = (ArrayList<String>) content.get("script");
         ArrayList<String> reg_scope = (ArrayList<String>) content.get("scope");
+//        ArrayList<String> reg_get = (ArrayList<String>) content.get("get");
+//        ArrayList<String> reg_post = (ArrayList<String>) content.get("post");
         rx = new Reflex(reg_script,reg_scope);
         rx.parse();
+//        if (reg_get!=null) rx.addKey(reg_get,server.req.param_GET);
+//        if (reg_post!=null) rx.addKey(reg_post,server.req.param_POST);
         String returnStatement = content.get("return").toString();
         String reg_var = "\\[(g|G|p|P|s|S):.+?]";
         write(replace(returnStatement,reg_var, this::parseParam));
@@ -156,7 +169,15 @@ public class Response{
 
     public void end(){
         raw.println(header);
-        raw.println(datagram);
+        if (datagram.length() != 0) raw.println(datagram);
+        if (bindata != null) {
+            try {
+                out.write(bindata);
+            } catch (IOException e) {
+                System.out.println("写二进制数据出错");
+                e.printStackTrace();
+            }
+        }
         try {
             server.server.close();
         } catch (IOException e) {

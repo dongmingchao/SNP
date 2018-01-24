@@ -1,0 +1,7 @@
+{
+  "scope":["dirName"],
+  "script":[
+    "a = fs.ls('dirName')"
+  ],
+  "return":"[s:a]"
+}

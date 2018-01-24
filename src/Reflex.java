@@ -3,6 +3,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Scanner;
 
 public class Reflex {
 
@@ -54,6 +55,11 @@ public class Reflex {
                     if (s.matches("'.+'")) args[i] = s.substring(1, s.length() - 1);
                     else args[i] = Integer.parseInt(s);
                 }
+                for (int i = 0; i < args.length; i++) {
+                    if (args[i] instanceof String && vars.containsKey(args[i])) {
+                        args[i] = vars.get(args[i]);
+                    }
+                }
                 String[] subCla = methodName.split("\\.");
                 methodName = subCla[0].toUpperCase().concat(subCla[1]);
                 try {
@@ -97,5 +103,14 @@ public class Reflex {
         for (String s : scope) {
             vars.put(s, null);
         }
+    }
+
+    /**
+     * 提供添加进scope的接口
+     */
+    void addKey(ArrayList<String> key,HashMap from){
+        key.forEach(each -> {
+            from.get(key);
+        });
     }
 }

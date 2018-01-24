@@ -8,6 +8,7 @@
   "/get":"server/get.json",
   "/post":"server/post.json",
   "/file":"server/file.json",
+  "/find":"server/find.json",
 
   "[html]":"page/*",
   "[js]":"page/js",

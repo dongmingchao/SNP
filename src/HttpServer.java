@@ -110,12 +110,9 @@ public class HttpServer extends Thread {
             try {
                 server = socket.accept();
 //                new Thread(sonServer).start();
-                PrintWriter out = new PrintWriter(server.getOutputStream(), true);
 //                while(in.hasNextLine()) System.out.println(in.nextLine());
                 req = new Request(server.getInputStream());
-                System.out.println("req");
-                resp = new Response(out, this);
-                System.out.println("file");
+                resp = new Response(server.getOutputStream(), this);
                 resp.file(route(req.url));
                 come.accept(req, resp);
                 resp.end();
@@ -151,6 +148,7 @@ public class HttpServer extends Thread {
             e.printStackTrace();
         }
         if (route != null) {
+            if (url==null) return null;
             String[] file = url.split("\\.");
             final String[] dir = new String[1];
             if (file.length > 1)
@@ -195,7 +193,7 @@ public class HttpServer extends Thread {
         }
     }
 
-    static HashMap<String, Object> json(String[] para, int[] at) {
+    private static HashMap<String, Object> json(String[] para, int[] at) {
         HashMap<String, Object> res = new HashMap<>();
         int index = 0;
         while (at[0] <= para.length) {

@@ -1,46 +1,22 @@
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
+import javafx.scene.shape.Path;
+
+import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Test2 {
-    public static void main(String[] args) {
-        try {
-            String flag = "----WebKitFormBoundary1uHTBlnPRxc1k36v";
-            DataInputStream in = new DataInputStream(new ByteArrayInputStream(flag.getBytes()));
-            while (in.available() > 0)
-                System.out.println(in.readInt());
-
-//            1919763055
-//            1970168929
-//            1920547128
-//            1700025713
-//            1248941172
-//            1365337154
-//            879897901
-
-//            1920554800
-//            1682135350
-//            1665418348
-//            1110468405
-//            1954098477
-
-//            757935405
-//            1466262091
-//            1769227887
-//            1919763055
-//            1970168929  ---====---
-//            1920562241
-//            927613818
-//            1630628460
-//            1414934833
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public static void main(String[] args) throws Exception {
+        File file = Paths.get("cloud/ano.png").toFile();
+        FileInputStream in = new FileInputStream(file);
+        byte[] store = new byte[in.available()];
+        in.read(store);
+        System.out.println(Arrays.toString(store));
     }
 
     public static void testGetAvailableCharsets() {
