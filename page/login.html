@@ -12,6 +12,7 @@
         font-size: 1.5rem;
     }
 </style>
+
 <body>
 <nav class="top-bar" data-topbar>
     <ul class="title-area">
@@ -30,6 +31,7 @@
         </ul>
     </section>
 </nav>
+
 <div class="medium-2 columns" style="background-color:#f1f1f1;">
     <ul class="side-nav" style="font-size: large">
         <li class="active"><a href="#">Home</a></li>
@@ -41,25 +43,29 @@
         <li><a href="#">其他</a></li>
     </ul>
 </div>
+
 <table class="medium-10">
     <thead>
     <tr>
         <th>
-            <input type="checkbox" id="j_cbAll"/>
+           <input type="checkbox" id="j_cbAll"/>
         </th>
-        <th>文件名</th>
-        <th>大小</th>
-        <th>修改日期</th>
-        <th>操作</th>
+        <th width="20%" style="font-size: 19px">文件名</th>
+        <th width="15%" style="font-size: 19px">大小</th>
+        <th width="25%" style="font-size: 19px">修改日期</th>
+        <th style="font-size: 19px">操作</th>
     </tr>
     </thead>
+
     <tbody id="fileList"></tbody>
 </table>
 
 </body>
+
 <script src="js/jquery.js"></script>
 <script src="https://cdn.bootcss.com/foundation/5.5.3/js/foundation.min.js"></script>
 <script src="https://cdn.bootcss.com/foundation/5.5.3/js/vendor/modernizr.js"></script>
+
 <script>
     let xhr = new XMLHttpRequest();
     xhr.open("get", "/file", true);
@@ -71,14 +77,14 @@
                 let each = rec[i].split('/');
                 if (!each[1]) each[1] = "..";
                 let ch = $('<tr>');
-                let swit = $('<div class="switch small">');
+                let swit = $('<div class="switch small" style="position: relative;top: 10px">');
                 swit.append($('<input type="checkbox" id="'+i+'">'));
                 swit.append($('<label for="'+i+'">'));
                 ch.append($('<td>').append(swit));
-                ch.append($('<td>').append($('<a href="#" onclick=kick(\'' + rec[i] + '\')>').text(each[1])));
-                ch.append($('<td>').text('10kb'));
-                ch.append($('<td>').text('2018.1.23'));
-                let toolbar = $('<ul class="button-group">');
+                ch.append($('<td style="font-size: 17px">').append($('<a href="#" onclick=kick(\'' + rec[i] + '\')>').text(each[1])));
+                ch.append($('<td style="font-size: 17px">').text('10kb'));
+                ch.append($('<td style="font-size: 17px">').text('2018.1.23'));
+                let toolbar = $('<ul class="button-group" style="position: relative;top: 10px;">');
                 toolbar.append($('<li>').append($('<button type="button" class="button small" onclick="window.location.href='+rec[i]+'">').text('下载')));
                 toolbar.append($('<li>').append($('<button type="button" class="button small" onclick="window.location.href='+rec[i]+'">').text('查看')));
                 toolbar.append($('<li>').append($('<button type="button" class="button small" onclick="window.location.href='+rec[i]+'">').text('复制')));
