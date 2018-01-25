@@ -10,10 +10,12 @@
   "/file":"server/file.json",
   "/find":"server/find.json",
   "/fileinspect":"server/fileinspect.json",
+  "/upload":"server/upload.json",
+  "/delete":"server/delete.json",
 
   "[html]":"page/*",
   "[js]":"page/js",
   "[css]":"page/css",
 
-  "/cloud/ano.png":"cloud/ano.png"
+  "[all]":"/Users/dongmingchao/*"
 }

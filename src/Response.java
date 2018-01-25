@@ -89,7 +89,8 @@ public class Response{
         file = path.toFile();
         System.out.println("file: "+file);
         if (file.getName().endsWith(".json")) return parse();
-        if (file.getName().endsWith(".css")) header.ContentType = "text/css";
+        String[] suffix_T = file.getName().split("\\.");
+        header.ContentType = server.getMIME("."+suffix_T[suffix_T.length-1]);
         writeFile(file);
         return this;
     }

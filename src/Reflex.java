@@ -88,11 +88,13 @@ public class Reflex {
                     e.printStackTrace();
                 } catch (InvocationTargetException e) {
                     e.printStackTrace();
+                }catch (NullPointerException e){
+                    System.out.println("参数为空");
                 }
                 if (operator.equals("=")) {
                     param_SCPOE.put(key, res);
                 }
-                System.out.println(param_SCPOE);
+                System.out.println("scope: "+param_SCPOE);
             }
         }
     }
@@ -104,8 +106,20 @@ public class Reflex {
         vars = new HashMap<>();
         for (String s : scope) {
             if (req.param_GET!=null) vars.putIfAbsent(s, req.param_GET.get(s));
-            if (req.param_POST!=null) vars.putIfAbsent(s, req.param_POST.get(s));
+            if (req.param_POST!=null) {
+                Scanner sc = new Scanner(s);
+                sc.useDelimiter(":");
+                Object got = req.param_POST.get(sc.next());
+                while (got instanceof HashMap) {
+                    got = ((HashMap) got).get(sc.next());
+                }
+                if (got == null) vars.putIfAbsent(s, null);
+                else vars.put(s,got);
+            }
         }
+        System.out.println("get: "+req.param_GET);
+        System.out.println("post: "+req.param_POST);
+        System.out.println("vars: "+vars);
     }
 
     /**

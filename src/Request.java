@@ -1,4 +1,5 @@
 import java.io.*;
+import java.net.URLDecoder;
 import java.nio.Buffer;
 import java.nio.charset.Charset;
 import java.util.*;
@@ -22,10 +23,17 @@ public class Request {
 //            String got = raw.nextLine();
 //            System.out.println(got);
 //        }
+
         if(!raw.hasNextLine()) return;
         String[] firstLine = raw.nextLine().split(" ");
         if (firstLine.length > 2) {
             method = firstLine[0];
+            try {
+                firstLine[1] = URLDecoder.decode(firstLine[1],"utf-8");
+            } catch (UnsupportedEncodingException e) {
+                System.out.println("解码为UTF-8失败");
+                e.printStackTrace();
+            }
             if (!firstLine[1].contains("?")) url = firstLine[1];
             else {
                 String[] raw_url = firstLine[1].split("\\?");
@@ -35,7 +43,7 @@ public class Request {
                 param_GET = new HashMap<>();
                 while (getPara.hasNext()) {
                     String[] para = getPara.next().split("=");
-                    param_GET.put(para[0], para[1]);
+                    if (para.length > 1) param_GET.put(para[0], para[1]);
                 }
             }
             protocol = firstLine[2].split("/")[0];
@@ -50,8 +58,8 @@ public class Request {
         String type = header.get("Content-Type");
         System.out.println(type);
         if (type == null) return;
-        if (type.matches("multipart/form-data; boundary=----WebKitFormBoundary.+")) {
-            String boundary = type.substring(30);
+        if (type.split("; ")[0].matches("multipart/form-data")) {
+            String boundary = type.split("boundary=")[1];
             System.out.println("本次boundary是" + boundary);
             DataInputStream flagStream = new DataInputStream(new ByteArrayInputStream(("--" + boundary).getBytes()));
             LinkedList<Integer> flagInt = new LinkedList<>();
@@ -83,7 +91,7 @@ public class Request {
                         depart(post, flagInt, false);//只是为了输出那个key和value之间的空行 TDOD: 换成更底层的控制
                         LinkedList<Integer> rawFile = depart(post, flagInt, true);
                         rawFile.removeLast();// 去掉最后的0D0A
-                        receive.add(rawFile);
+                        receive.add(rawFile);//没用了
                         file.putIfAbsent("raw", rawFile);
                         param_POST.putIfAbsent(key, file);
                     } else {

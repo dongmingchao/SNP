@@ -1,0 +1,7 @@
+{
+  "scope":["a","path"],
+  "script":[
+    "a = fs.rm('path')"
+  ],
+  "return":"[s:a]"
+}

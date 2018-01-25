@@ -1,7 +1,7 @@
 {
   "scope":["a","vars"],
   "script":[
-    "a = fs.ls('cloud')"
+    "a = fs.ls('/Users/dongmingchao')"
   ],
   "return":"[s:a]"
 }

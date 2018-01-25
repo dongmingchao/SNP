@@ -3,9 +3,9 @@
 <head>
     <meta charset="utf-8">
     <title>云盘</title>
-    <link rel="stylesheet" type="text/css" href="css/login.css"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.bootcss.com/foundation/5.5.3/css/foundation.min.css">
+    <link rel="stylesheet" type="text/css" href="css/login.css"/>
 </head>
 <body>
 <nav class="top-bar" data-topbar>
@@ -15,17 +15,10 @@
         </li>
         <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
     </ul>
-
-    <section class="top-bar-section">
-        <ul class="left">
-            <li class="active"><a href="#">Home</a></li>
-            <li><a href="#">Page 1</a></li>
-            <li><a href="#">Page 2</a></li>
-            <li><a href="#">Page 3</a></li>
-        </ul>
-    </section>
 </nav>
-
+<div id="upload">
+    <input type="file" name="file" id="choseFile"><input id="upPath" type="hidden" name="path" value="/Users/dongmingchao"><input id="up" type="submit" class="button tiny" value="上传文件">
+</div>
 <div class="medium-2 columns" style="background-color:#f1f1f1;">
     <ul class="side-nav" style="font-size: large">
         <li class="active"><a href="#">Home</a></li>
@@ -35,28 +28,31 @@
         <li><a href="#">视频</a></li>
         <li><a href="#">音乐</a></li>
         <li><a href="#">其他</a></li>
+        <li><a href="#">隐藏文件</a></li>
     </ul>
 </div>
 
 <table class="medium-10">
     <thead>
     <tr>
-        <th width="8%">
+        <th>
            <input type="checkbox" id="j_cbAll"/>
         </th>
-        <th width="" style="font-size: 19px">文件名</th>
-        <th width="7%" style="font-size: 19px">大小</th>
-        <th width="10%" style="font-size: 19px">修改日期</th>
-        <th width ="40%"style="font-size: 19px">操作</th>
+        <th style="font-size: 19px">文件名</th>
+        <th style="font-size: 19px">大小</th>
+        <th style="font-size: 19px">修改日期</th>
+        <th style="font-size: 19px; width: 200px">操作</th>
     </tr>
     </thead>
 
     <tbody id="fileList"></tbody>
 </table>
 
+<div id="myModal" class="reveal-modal tiny" data-reveal></div>
 </body>
 
-<script src="js/jquery.js"></script>
+<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+<!--<script src="js/jquery.js"></script>-->
 <script src="https://cdn.bootcss.com/foundation/5.5.3/js/foundation.min.js"></script>
 <script src="https://cdn.bootcss.com/foundation/5.5.3/js/vendor/modernizr.js"></script>
 <script src="js/login.js"></script>

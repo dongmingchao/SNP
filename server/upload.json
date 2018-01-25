@@ -1,0 +1,7 @@
+{
+  "scope":["a","path","file:raw","file:name"],
+  "script":[
+    "a = fs.save('path','file:name','file:raw')"
+  ],
+  "return":"[s:a]"
+}

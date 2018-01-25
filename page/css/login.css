@@ -7,3 +7,40 @@
 .side-nav > li{
     font-size: 1.5rem;
 }
+.button-group{
+    white-space: nowrap;
+}
+
+.active {
+    background-color: gainsboro;
+}
+
+.Music{
+    background-color: greenyellow !important;
+}
+
+.Movies{
+    background-color: skyblue !important;
+}
+
+.Documents{
+    background-color: burlywood !important;
+}
+
+.Pictures{
+    background-color: lightcoral !important;
+}
+#upload{
+    color: white;
+    position: absolute;
+    right: 200px;
+    top: 0;
+    white-space: nowrap;
+}
+#upload > .button{
+    top: 0;
+}
+
+.alert-box{
+    transition: top 0.5s ease-in-out;
+}

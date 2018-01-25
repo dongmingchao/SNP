@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -10,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class HttpServer extends Thread {
 
@@ -48,7 +50,7 @@ public class HttpServer extends Thread {
                 socket = new ServerSocket(port);
 //                socket.setSoTimeout(10000);//设置超时时间
             }
-            outLocal.println("等待有人链接 http://127.0.0.1:"+port+"/");
+            outLocal.println("等待有人链接 http://127.0.0.1:" + port + "/");
             return socket;
         } catch (SocketTimeoutException e) {
             outLocal.println("太久没有人链接，已退出");
@@ -126,8 +128,32 @@ public class HttpServer extends Thread {
 
     public BiConsumer<Request, Response> come;
     public HashMap<String, Object> route;
+    public HashMap<String, Object> mime;
     private String routeFile;
     private FileTime watchRoute;
+
+    /**
+     * MIME类型获取
+     * @param suffix
+     * @return
+     */
+
+    String getMIME(String suffix){
+        if (mime==null) {
+            try {
+                mime = json(Paths.get(Script.class.getResource("mime.json").toURI()).toFile());
+                return getMIME(suffix);
+            } catch (URISyntaxException e) {
+                System.out.println("MIME文件读取出错");
+                e.printStackTrace();
+                return "text/plain";
+            }
+        }else {
+            Object res = mime.get(suffix);
+            if (res==null) return "text/plain";
+            else return res.toString();
+        }
+    }
 
     public void setRouteFile(String routeFile) {
         try {
@@ -147,33 +173,70 @@ public class HttpServer extends Thread {
             System.out.println("配置文件" + routeFile + "出错");
             e.printStackTrace();
         }
+//            if (url==null) return null;
+//            String[] file = url.split("\\.");
+//            final String[] dir = new String[1];
+//            if (file.length > 1)
+//                dir[0] = file[file.length - 1];
+//            for (String s : route.keySet()) {
+//                System.out.println("route中的路径："+s);
+//                if (s.equals(url)) return Paths.get(route.get(s).toString());
+//                else if (s.equals("[" + dir[0] + "]")) {
+//                    String type = (String) route.get(s);
+//                    try {
+//                        if (type.endsWith("*")) {
+//                            final String typeDir = type.split("/\\*")[0];
+//                            return Files.walk(Paths.get(typeDir)).filter(path -> path.toString().equals(typeDir + url)).findFirst().orElse(null);
+//                        } else {
+//                            String[] theFile = url.split("/");
+//                            String the = theFile[theFile.length - 1];
+//                            return Files.find(Paths.get(type), 1, ((path, basicFileAttributes) -> path.toString().endsWith("." + dir[0])))
+//                                    .filter(path -> path.toString().equals(type + "/" + the)).findFirst().orElse(null);
+//                        }
+//                    } catch (IOException e) {
+//                        System.out.println("路由文件配置出错：没有文件夹 " + route.get(s));
+//                        e.printStackTrace();
+//                    }
+//                }else if (s.equals("[all]")) {
+//                    String type = (String) route.get(s);
+//                    final String typeDir = type.split("/\\*")[0];
+//                    try {
+//                        return Files.walk(Paths.get(typeDir)).filter(path -> path.toString().equals(typeDir + url)).findFirst().orElse(null);
+//                    } catch (IOException e) {
+//                        System.out.println("路由文件配置出错：没有文件夹 " + route.get(s));
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
         if (route != null) {
             if (url==null) return null;
-            String[] file = url.split("\\.");
-            final String[] dir = new String[1];
-            if (file.length > 1)
-                dir[0] = file[file.length - 1];
-            for (String s : route.keySet()) {
-//                if (s.equals("[*]")) return Files.walk TODO: 拓展功能
-                if (s.equals(url)) return (Paths.get(route.get(s).toString()));
-                if (s.equals("[" + dir[0] + "]")) {
-                    String type = (String) route.get(s);
-                    try {
-                        if (type.endsWith("*")) {
-                            final String typeDir = type.split("/\\*")[0];
-                            return Files.walk(Paths.get(typeDir)).filter(path -> path.toString().equals(typeDir + url)).findFirst().orElse(null);
-                        } else {
-                            String[] theFile = url.split("/");
-                            String the = theFile[theFile.length - 1];
-                            return Files.find(Paths.get(type), 1, ((path, basicFileAttributes) -> path.toString().endsWith("." + dir[0])))
-                                    .filter(path -> path.toString().equals(type + "/" + the)).findFirst().orElse(null);
-                        }
-                    } catch (IOException e) {
-                        System.out.println("路由文件配置出错：没有文件夹 " + route.get(s));
-                        e.printStackTrace();
-                    }
-                }
+            Object one = route.get(url);
+            Path res = Paths.get("");
+            if (one != null) res = Paths.get(one.toString());
+            if (res.toFile().exists()) return res;
+            Object all = route.get("[all]");
+            if (all instanceof String){
+                String parent = null;
+                if (((String) all).endsWith("*")){
+                    parent = ((String) all).split("/\\*")[0];
+                }else parent = ((String) all).split("/")[0];
+                System.out.println("all: "+parent);
+                res = Paths.get(parent.concat(url));
             }
+            if (res.toFile().exists()) return res;
+            String[] the = url.split("\\.");
+            System.out.println("url: " + url);
+            System.out.println(route);
+            Object routType = route.get("["+the[the.length - 1]+"]");
+            if (routType instanceof String) {//each=> page/js/---.js | page/--.html ; url=> /js/--.js | /--.html
+                String parent = null;
+                if (((String) routType).endsWith("*")){
+                    parent = ((String) routType).split("/\\*")[0];
+                }else parent = ((String) routType).split("/")[0];
+                System.out.println("routeType: "+parent);
+                res = Paths.get(parent.concat(url));
+            }
+            if (res.toFile().exists()) return res;
             return routeAgain(url);
         } else {
             route = json(routeFile);
@@ -182,6 +245,47 @@ public class HttpServer extends Thread {
                 return route(url);
             }
         }
+    }
+
+    HashMap<String, LinkedList<Path>> routePath(HashMap<String, Object> got) {
+        HashMap<String, LinkedList<Path>> res = new HashMap<>();
+        got.forEach((key, value) -> {
+            if (value != null) {
+                LinkedList<Path> paths = new LinkedList<>();
+                if (key.matches("/.*")) {
+                    paths.add(Paths.get(value.toString()));
+                    res.put(key, paths);
+                } else if (key.equals("[all]")) {
+                    try {
+                        if (value.toString().endsWith("*")) {
+                            String typeDir = value.toString().split("/\\*")[0];
+                            paths.addAll(Files.walk(Paths.get(typeDir)).collect(Collectors.toList()));
+                        } else {
+                            paths.addAll(Files.walk(Paths.get(value.toString()), 1).collect(Collectors.toList()));
+                        }
+                    } catch (IOException e) {
+                        System.out.println("路由文件配置出错：没有文件夹");
+                        e.printStackTrace();
+                    }
+                    res.put(key.substring(1, key.length() - 1), paths);
+                } else if (key.matches("\\[.+]")) {
+                    try {
+                        String type = key.substring(1, key.length() - 1);
+                        if (value.toString().endsWith("*")) {
+                            String typeDir = value.toString().split("/\\*")[0];
+                            paths.addAll(Files.walk(Paths.get(typeDir)).filter(path -> path.getFileName().toString().endsWith("." + type)).collect(Collectors.toList()));
+                        } else {
+                            paths.addAll(Files.find(Paths.get(((String) value)), 1, ((path, basicFileAttributes) -> path.toString().endsWith("." + type))).collect(Collectors.toList()));
+                        }
+                    } catch (IOException e) {
+                        System.out.println("路由文件配置出错：没有文件夹 ");
+                        e.printStackTrace();
+                    }
+                    res.put(key.substring(1, key.length() - 1), paths);
+                }
+            }
+        });
+        return res;
     }
 
     private Path routeAgain(String url) {
@@ -223,7 +327,7 @@ public class HttpServer extends Thread {
         return res;
     }
 
-    static HashMap<String,Object> json(String fileName){
+    static HashMap<String, Object> json(String fileName) {
         if (fileName == null) return null;
         else return json(new File(fileName));
     }
