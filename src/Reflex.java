@@ -103,6 +103,7 @@ public class Reflex {
      * 将scpoe中的变量变成hashMap的Key
      */
     void create_vars(ArrayList<String> scope) {
+        if (scope==null) return;
         vars = new HashMap<>();
         for (String s : scope) {
             if (req.param_GET!=null) vars.putIfAbsent(s, req.param_GET.get(s));

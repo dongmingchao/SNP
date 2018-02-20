@@ -1,8 +1,6 @@
+import javax.annotation.Resources;
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.net.URISyntaxException;
+import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -140,14 +138,8 @@ public class HttpServer extends Thread {
 
     String getMIME(String suffix){
         if (mime==null) {
-            try {
-                mime = json(Paths.get(Script.class.getResource("mime.json").toURI()).toFile());
-                return getMIME(suffix);
-            } catch (URISyntaxException e) {
-                System.out.println("MIME文件读取出错");
-                e.printStackTrace();
-                return "text/plain";
-            }
+            mime = json(getClass().getResourceAsStream("mime.json"));
+            return getMIME(suffix);
         }else {
             Object res = mime.get(suffix);
             if (res==null) return "text/plain";
@@ -332,30 +324,35 @@ public class HttpServer extends Thread {
         else return json(new File(fileName));
     }
 
-    static HashMap<String, Object> json(File file) {
+    static HashMap<String, Object> json(InputStream in){
+        return json(new Scanner(in));
+    }
+
+    static HashMap<String, Object> json(File file){
         try {
-            Scanner in = new Scanner(file);
-            in.useDelimiter("\"|\\s");
-            ArrayList<String> got = new ArrayList<>();
-            while (in.hasNext()) {
-                String each = in.next();
-                if (each.equals("")) continue;
-                if (each.matches("\\W+")) {
-                    for (int i = 0; i < each.length(); i++)
-                        got.add(String.valueOf(each.charAt(i)));
-                } else got.add(each);
-            }
-            String[] convert = got.toArray(new String[0]);
-            int[] start = {0};
-            return json(convert, start);
+            return json(new Scanner(file));
         } catch (FileNotFoundException e) {
             System.out.println("文件未找到");
             e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
-    ;
+    static HashMap<String, Object> json(Scanner in) {
+        in.useDelimiter("\"|\\s");
+        ArrayList<String> got = new ArrayList<>();
+        while (in.hasNext()) {
+            String each = in.next();
+            if (each.equals("")) continue;
+            if (each.matches("\\W+")) {
+                for (int i = 0; i < each.length(); i++)
+                    got.add(String.valueOf(each.charAt(i)));
+            } else got.add(each);
+        }
+        String[] convert = got.toArray(new String[0]);
+        int[] start = {0};
+        return json(convert, start);
+    }
 
     static ArrayList array(String[] para, int[] at) {
         ArrayList res = new ArrayList();

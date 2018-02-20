@@ -132,35 +132,28 @@ $('.side-nav> li').click(function () {
     $(this).addClass('active');
     $(this).siblings('.active').removeClass('active');
     let ta = $('#fileList');
-    switch ($(this)[0].innerText) {
-        case '全部文件':
-            ta.find('tr').show();
-            ta.find('tr.Hide').hide();
-            break;
-        case '图片':
-            ta.find('tr.Pictures').show();
-            ta.find('tr:not(.Pictures)').hide();
-            break;
-        case '文档':
-            ta.find('tr.Documents').show();
-            ta.find('tr:not(.Documents)').hide();
-            break;
-        case '视频':
-            ta.find('tr.Movies').show();
-            ta.find('tr:not(.Movies)').hide();
-            break;
-        case '音乐':
-            ta.find('tr.Music').show();
-            ta.find('tr:not(.Music)').hide();
-            break;
-        case '其他':
-            ta.find('tr.Others').show();
-            ta.find('tr:not(.Others)').hide();
-            break;
-        case '隐藏文件':
-            ta.find('tr.Hide').show();
-            ta.find('tr:not(.Hide)').hide();
-            break;
+    let showHere = $(this)[0].innerText;
+    if (showHere.match('全部文件')) {
+        ta.find('tr').show();
+        ta.find('tr.Hide').hide();
+    }else if (showHere.match("图片")) {
+        ta.find('tr.Pictures').show();
+        ta.find('tr:not(.Pictures)').hide();
+    }else if(showHere.match('文档')) {
+        ta.find('tr.Documents').show();
+        ta.find('tr:not(.Documents)').hide();
+    }else if(showHere.match('视频')) {
+        ta.find('tr.Movies').show();
+        ta.find('tr:not(.Movies)').hide();
+    }else if (showHere.match('音乐')) {
+        ta.find('tr.Music').show();
+        ta.find('tr:not(.Music)').hide();
+    }else if (showHere.match('其他')) {
+        ta.find('tr.Others').show();
+        ta.find('tr:not(.Others)').hide();
+    }else if (showHere.match('隐藏文件')) {
+        ta.find('tr.Hide').show();
+        ta.find('tr:not(.Hide)').hide();
     }
 });
 

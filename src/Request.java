@@ -24,12 +24,12 @@ public class Request {
 //            System.out.println(got);
 //        }
 
-        if(!raw.hasNextLine()) return;
+        if (!raw.hasNextLine()) return;
         String[] firstLine = raw.nextLine().split(" ");
         if (firstLine.length > 2) {
             method = firstLine[0];
             try {
-                firstLine[1] = URLDecoder.decode(firstLine[1],"utf-8");
+                firstLine[1] = URLDecoder.decode(firstLine[1], "utf-8");
             } catch (UnsupportedEncodingException e) {
                 System.out.println("解码为UTF-8失败");
                 e.printStackTrace();
@@ -74,6 +74,15 @@ public class Request {
             LinkedList<LinkedList<Integer>> receive = new LinkedList<>();
             try {
                 while (post.available() > 0) {
+
+
+//                    while (raw.hasNextLine()) {
+//                        String got = raw.nextLine();
+//                        writeFile(receive);
+//                        System.out.println(got);
+//                    }
+
+
                     String param = listToString(depart(post, flagInt, false));
                     if (param.equals("")) continue;
                     if (param.equals("--")) continue;
@@ -130,7 +139,7 @@ public class Request {
                 raw.useDelimiter("&");
                 while (raw.hasNext()) {
                     String[] couple = raw.next().split("=");
-                    param_POST.put(couple[0],couple[1]);
+                    param_POST.put(couple[0], couple[1]);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
